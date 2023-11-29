@@ -112,6 +112,9 @@ const Home = () => {
                             <td>{page.name}</td>
                             <td>{page.slug}</td>
                             <td>
+                              <Link to={`http://localhost:8000/page/${page.id}`}>View</Link>
+                            </td>
+                            <td>
                               <Link to={`/editor/${page.id}`}>Edit</Link>
                             </td>
                           </tr>

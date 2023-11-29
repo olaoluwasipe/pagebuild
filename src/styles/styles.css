@@ -130,6 +130,17 @@ body {
   .gjs-four-color-h:hover {
     color: #990011ff;
   }
+
+  .gjs-toolbar{
+    border-radius: 5px;
+    margin: 10px 0;
+  }
+
+  .newstuff{
+    padding: 30px;
+    background-color: aliceblue;
+    border-radius: 20px;
+  }
   
   .gjs-pn-btn {
     border: 1px solid #990011ff;

@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import grapejs from 'grapesjs';
 import gjsplugin from "grapesjs-blocks-basic";
-import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { resolvePath, useParams } from 'react-router-dom';
 import { API_HOST } from './api_utils';
 import "./styles/styles.css";
 
@@ -14,7 +15,6 @@ const Editor = () => {
     return () => {
       const editor = grapejs.init({
         container: '#editor',
-        storageManager: false,
         blockManager: {
           appendTo: '#blocks',
         },
@@ -95,6 +95,12 @@ const Editor = () => {
                   togglable: false,
                 },
                 {
+                  id: 'device-tablet',
+                  label: '<i class="fa fa-tablet"></i>',
+                  command: 'set-device-tablet',
+                  togglable: false,
+                },
+                {
                   id: 'device-mobile',
                   label: '<i class="fa fa-mobile"></i>',
                   command: 'set-device-mobile',
@@ -109,6 +115,11 @@ const Editor = () => {
             {
               name: 'Desktop',
               width: '',
+            },
+            {
+              name: 'Tablet',
+              width: '750px',
+              widthMedia: '800px'
             },
             {
               name: 'Mobile',
@@ -126,14 +137,59 @@ const Editor = () => {
       editor.Commands.add('set-device-desktop', {
         run: (editor) => editor.setDevice('Desktop'),
       });
+      editor.Commands.add('set-device-tablet', {
+        run: (editor) => editor.setDevice('Tablet'),
+      });
       editor.Commands.add('set-device-mobile', {
         run: (editor) => editor.setDevice('Mobile'),
       });
+
+      const blockManager = editor.Blocks;
+      blockManager.add('section', {
+        label: 'Section',
+        category: 'New',
+        attributes: {
+          title: 'This is a heading'
+        },
+        content: `
+          <div class="newstuff" style="width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); font-family: 'san-serif">
+            <div>
+              <h1 style="color: red; font-family: 'Poppins'"> This is a heading in this box, please use the heading</h1>
+              <p> This is where the content is, please finish it up </p>
+            </div>
+            <div>
+              <h2> I'm a little tired to be honest </h2>
+            </div>
+          </div>
+        `,
+      })
+
+      editor.on('storage:start', () => {
+        const storageManager = editor.Storage;
+        async function saveHtml () {
+          try {
+            const htmlData = editor.getHtml();
+            const cssData = editor.getCss();
+            const data = {
+              html: htmlData,
+              css: cssData,
+              page: pageId
+            }
+            const response = await axios.post(`${API_HOST}/page/${pageId}/parts`, data);
+            console.log(response);
+          } catch (error) {
+            console.log(error)
+          }
+        }
+        console.log(editor.getHtml())
+        saveHtml()
+      })
+
       setEditor(editor)
     };
   }, [])
   return (
-    <div classNameName="App">
+    <div className="App">
       <div id='navbar' className='sidenav d-flex flex-column overflow-scroll'>
         <nav className='navbar navbar-light'>
           <div className='container-fluid'>
@@ -273,61 +329,8 @@ const Editor = () => {
             <div className='panel__basic-actions'></div>
           </div>
         </nav>
-        <div id='editor'></div>
-        {/* <div
-          className='modal fade'
-          id='addPageModal'
-          tabindex='-1'
-          aria-labelledby='addPageModalLabel'
-          aria-hidden='true'
-          data-bs-backdrop='static'
-          data-bs-keyboard='false'
-        >
-          <div className='modal-dialog'>
-            <div className='modal-content'>
-              <form id='create-page' onsubmit='return validatForm(event)' novalidate>
-                <div className='modal-header'>
-                  <h5 className='modal-title' id='addPageModalLabel'>Create Page</h5>
-                  <button
-                    type='button'
-                    className='btn-close'
-                    data-bs-dismiss='modal'
-                    aria-label='Close'
-                  ></button>
-                </div>
-                <div className='modal-body'>
-                  <div className='col-auto'>
-                    <label htmlFor='name' className='form-label'>Name</label>
-                    <input
-                      type='text'
-                      className='form-control form-control-sm'
-                      id='name'
-                      name='name'
-                      placeholder='Name of Page'
-                      required
-                    />
-                    <div className='invalid-feedback'>
-                      Please provide a valid name.
-                    </div>
-                  </div>
-                </div>
-                <div className='modal-footer'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary btn-sm'
-                    data-bs-dismiss='modal'
-                    onclick='clearForm()'
-                  >
-                    Close
-                  </button>
-                  <button type='submit' className='btn btn-primary btn-sm'>
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div> */}
+        <div id='editor'>
+        </div>
       </div>
     </div>
   );
